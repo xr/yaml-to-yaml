@@ -20,3 +20,12 @@ func LoadConfig(filename string) (*Config, error) {
 
 	return &config, nil
 }
+
+func NewMap(elements ...interface{}) map[string]interface{} {
+	m := make(map[string]interface{})
+	for i := 0; i < len(elements); i += 2 {
+		key, value := elements[i].(string), elements[i+1]
+		m[key] = value
+	}
+	return m
+}

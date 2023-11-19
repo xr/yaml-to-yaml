@@ -23,44 +23,32 @@ rateLimiters:
         - unit: second
           limit: 1
         - unit: minute
-          limit: 5
+          limit: 1
+  echo2: 
+    - targets:
+        - key: unity-gw-player-id
+      limits:
+        - unit: second
+          limit: 2
+        - unit: minute
+          limit: 2
 
 routes:
   - path: /echo
     authentication: false
-    filters:
-      disableAuthorization: true
     methods:
       - GET
     name: echo
     rateLimiters: 
       - "echo1"
+      - "echo2"
+
   - path: /echo2
-    authentication: true
-    filters:
-      disableAuthorization: true
+    authentication: false
     methods:
       - GET
     name: echo2
-    headers:
-      in:
-        - example3
-  - path: /echo3
-    authentication: false
-    filters:
-      disableAuthorization: true
-    methods:
-      - GET
-      - POST
-      - PUT
-      - PATCH
-    name: echo3
-  - path: /echo4
-    authentication: true
-    filters:
-      disableAuthorization: true
-    methods:
-      - GET
-    name: echo4
+    rateLimiters: 
+      - "echo1"
 
 debug: false

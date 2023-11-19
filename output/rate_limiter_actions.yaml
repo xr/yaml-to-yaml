@@ -1,0 +1,79 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: echo-server-ratelimiter
+spec:
+  configPatches:
+  - applyTo: HTTP_ROUTE
+    match:
+      context: GATEWAY
+      routeConfiguration:
+        vhost:
+          route:
+            name: echo
+    patch:
+      operation: MERGE
+      value:
+        route:
+          rate_limits:
+          - actions:
+            - generic_key:
+                descriptor_key: group
+                descriptor_value: echo1-unit-second
+            - remote_address: {}
+            - request_headers:
+                descriptor_key: unity-gw-player-id
+                header_name: unity-gw-player-id
+          - actions:
+            - generic_key:
+                descriptor_key: group
+                descriptor_value: echo1-unit-minute
+            - remote_address: {}
+            - request_headers:
+                descriptor_key: unity-gw-player-id
+                header_name: unity-gw-player-id
+          - actions:
+            - generic_key:
+                descriptor_key: group
+                descriptor_value: echo2-unit-second
+            - request_headers:
+                descriptor_key: unity-gw-player-id
+                header_name: unity-gw-player-id
+          - actions:
+            - generic_key:
+                descriptor_key: group
+                descriptor_value: echo2-unit-minute
+            - request_headers:
+                descriptor_key: unity-gw-player-id
+                header_name: unity-gw-player-id
+  - applyTo: HTTP_ROUTE
+    match:
+      context: GATEWAY
+      routeConfiguration:
+        vhost:
+          route:
+            name: echo2
+    patch:
+      operation: MERGE
+      value:
+        route:
+          rate_limits:
+          - actions:
+            - generic_key:
+                descriptor_key: group
+                descriptor_value: echo1-unit-second
+            - remote_address: {}
+            - request_headers:
+                descriptor_key: unity-gw-player-id
+                header_name: unity-gw-player-id
+          - actions:
+            - generic_key:
+                descriptor_key: group
+                descriptor_value: echo1-unit-minute
+            - remote_address: {}
+            - request_headers:
+                descriptor_key: unity-gw-player-id
+                header_name: unity-gw-player-id
+  workloadSelector:
+    labels:
+      ingress-type: namespace
