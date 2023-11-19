@@ -1,0 +1,66 @@
+name: echo-server
+enableEchoServer: true
+
+hosts:
+  - echo.example.com
+
+upstream:
+  host: echo-server
+  supportsHttps: false
+
+headers:
+  in:
+    - example1
+    - example2
+    - unity-gw-player-id
+
+rateLimiters:
+  echo1: 
+    - targets:
+        - key: ip
+        - key: unity-gw-player-id
+      limits:
+        - unit: second
+          limit: 1
+        - unit: minute
+          limit: 5
+
+routes:
+  - path: /echo
+    authentication: false
+    filters:
+      disableAuthorization: true
+    methods:
+      - GET
+    name: echo
+    rateLimiters: 
+      - "echo1"
+  - path: /echo2
+    authentication: true
+    filters:
+      disableAuthorization: true
+    methods:
+      - GET
+    name: echo2
+    headers:
+      in:
+        - example3
+  - path: /echo3
+    authentication: false
+    filters:
+      disableAuthorization: true
+    methods:
+      - GET
+      - POST
+      - PUT
+      - PATCH
+    name: echo3
+  - path: /echo4
+    authentication: true
+    filters:
+      disableAuthorization: true
+    methods:
+      - GET
+    name: echo4
+
+debug: false
