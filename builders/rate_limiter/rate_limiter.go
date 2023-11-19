@@ -1,15 +1,19 @@
-package models
+package rate_limiter
 
-type RateLimit struct {
-	Actions []interface{} `yaml:"actions"`
-}
+import (
+	"fmt"
 
-func isRateLimiterExists(rateLimiters map[string][]RateLimiter, rateLimiterName string) bool {
+	"github.com/Unity-Technologies/unity-gateway-y2y/types"
+	"github.com/Unity-Technologies/unity-gateway-y2y/utilities"
+	"gopkg.in/yaml.v2"
+)
+
+func isRateLimiterExists(rateLimiters map[string][]types.RateLimiter, rateLimiterName string) bool {
 	_, exists := rateLimiters[rateLimiterName]
 	return exists
 }
 
-func GetRateLimits(rateLimiters map[string][]RateLimiter, route Route) []interface{} {
+func GetRateLimits(rateLimiters map[string][]types.RateLimiter, route types.Route) []interface{} {
 	rateLimits := []interface{}{}
 
 	for _, rateLimiterName := range route.RateLimiters {
@@ -19,7 +23,7 @@ func GetRateLimits(rateLimiters map[string][]RateLimiter, route Route) []interfa
 	return rateLimits
 }
 
-func GetRateLimit(rateLimiters map[string][]RateLimiter, rateLimiterName string) []interface{} {
+func GetRateLimit(rateLimiters map[string][]types.RateLimiter, rateLimiterName string) []interface{} {
 	rateLimits := []interface{}{}
 
 	if !isRateLimiterExists(rateLimiters, rateLimiterName) {
@@ -56,16 +60,16 @@ func GetRateLimit(rateLimiters map[string][]RateLimiter, rateLimiterName string)
 				}
 			}
 
-			rateLimits = append(rateLimits, &RateLimit{
-				Actions: actions,
-			})
+			rateLimits = append(rateLimits, utilities.NewMap(
+				"actions", actions,
+			))
 		}
 	}
 
 	return rateLimits
 }
 
-func NewConfigPatches(config *Config) []interface{} {
+func NewConfigPatches(config *types.Config) []interface{} {
 	configPatches := []interface{}{}
 	for _, route := range config.Routes {
 		configPatch := NewConfigPatch(config.RateLimiters, route)
@@ -75,24 +79,24 @@ func NewConfigPatches(config *Config) []interface{} {
 	return configPatches
 }
 
-func NewConfigPatch(rateLimiters map[string][]RateLimiter, route Route) interface{} {
+func NewConfigPatch(rateLimiters map[string][]types.RateLimiter, route types.Route) interface{} {
 	rateLimits := GetRateLimits(rateLimiters, route)
-	configPatch := NewMap(
+	configPatch := utilities.NewMap(
 		"applyTo", "HTTP_ROUTE",
-		"match", NewMap(
+		"match", utilities.NewMap(
 			"context", "GATEWAY",
-			"routeConfiguration", NewMap(
-				"vhost", NewMap(
-					"route", NewMap(
+			"routeConfiguration", utilities.NewMap(
+				"vhost", utilities.NewMap(
+					"route", utilities.NewMap(
 						"name", route.Name,
 					),
 				),
 			),
 		),
-		"patch", NewMap(
+		"patch", utilities.NewMap(
 			"operation", "MERGE",
-			"value", NewMap(
-				"route", NewMap(
+			"value", utilities.NewMap(
+				"route", utilities.NewMap(
 					"rate_limits", rateLimits,
 				),
 			),
@@ -102,18 +106,18 @@ func NewConfigPatch(rateLimiters map[string][]RateLimiter, route Route) interfac
 	return configPatch
 }
 
-func NewEnvoyFilter(config *Config) interface{} {
+func NewEnvoyFilter(config *types.Config) interface{} {
 	configPatches := NewConfigPatches(config)
-	envoyFilter := NewMap(
+	envoyFilter := utilities.NewMap(
 		"apiVersion", "networking.istio.io/v1alpha3",
 		"kind", "EnvoyFilter",
-		"metadata", NewMap(
+		"metadata", utilities.NewMap(
 			"name", config.Name+"-ratelimiter",
 		),
-		"spec", NewMap(
+		"spec", utilities.NewMap(
 			"configPatches", configPatches,
-			"workloadSelector", NewMap(
-				"labels", NewMap(
+			"workloadSelector", utilities.NewMap(
+				"labels", utilities.NewMap(
 					"ingress-type", "namespace",
 				),
 			),
@@ -121,4 +125,16 @@ func NewEnvoyFilter(config *Config) interface{} {
 	)
 
 	return envoyFilter
+}
+
+func Render(config *types.Config) (string, error) {
+
+	envoyFilter := NewEnvoyFilter(config)
+
+	yamlData, err := yaml.Marshal(envoyFilter)
+	if err != nil {
+		fmt.Printf("Error marshaling to YAML: %v\n", err)
+	}
+
+	return string(yamlData), nil
 }
