@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Unity-Technologies/unity-gateway-y2y/types"
+	"github.com/xr/yaml-to-yaml/types"
 
 	"gopkg.in/yaml.v2"
 )

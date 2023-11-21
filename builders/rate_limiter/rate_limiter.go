@@ -3,8 +3,8 @@ package rate_limiter
 import (
 	"fmt"
 
-	"github.com/Unity-Technologies/unity-gateway-y2y/types"
-	"github.com/Unity-Technologies/unity-gateway-y2y/utilities"
+	"github.com/xr/yaml-to-yaml/types"
+	"github.com/xr/yaml-to-yaml/utilities"
 	"gopkg.in/yaml.v2"
 )
 

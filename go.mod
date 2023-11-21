@@ -1,4 +1,4 @@
-module github.com/Unity-Technologies/unity-gateway-y2y
+module github.com/xr/yaml-to-yaml
 
 go 1.21.0
 

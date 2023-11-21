@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Unity-Technologies/unity-gateway-y2y/builders/rate_limiter"
-	"github.com/Unity-Technologies/unity-gateway-y2y/utilities"
+	"github.com/xr/yaml-to-yaml/builders/rate_limiter"
+	"github.com/xr/yaml-to-yaml/utilities"
 )
 
 func main() {
