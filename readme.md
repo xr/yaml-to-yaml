@@ -1,6 +1,4 @@
-## Unity Gateway yaml-to-yaml
-
-Simplify our Helm templating by embracing the flexibility of the programming language.
+# yaml-to-yaml
 
 ## Usage
 
